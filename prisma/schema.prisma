@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id         Int     @id @default(autoincrement())
+  username   String  @unique
+  firstName  String?
+  lastName   String?
+  email      String?
+  password   String?
+  phone      String?
+  userStatus Int?    // swaggerの userStatus 想定
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Pet {
+  id        Int      @id @default(autoincrement())
+  name      String
+  status    String?  // available / pending / sold を想定（厳密バリデーションは後で）
+  categoryId Int?
+  category  Category? @relation(fields: [categoryId], references: [id])
+
+  photoUrls String   @default("") // 本来 array だけどSQLiteで簡易化（カンマ区切り）
+  tags      PetTag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String
+  pets Pet[]
+}
+
+model Tag {
+  id   Int    @id @default(autoincrement())
+  name String
+  pets PetTag[]
+}
+
+model PetTag {
+  petId Int
+  tagId Int
+  pet   Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+  tag   Tag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([petId, tagId])
+}
